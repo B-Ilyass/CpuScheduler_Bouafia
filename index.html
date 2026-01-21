@@ -1,48 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <title>CPU scheduler simulator</title>
-   <meta charset="utf-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1">
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <title>CPU Scheduler Simulator - Round Robin</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
 <body>
 <div class="container">
-   <h2>CPU scheduler simulator</h2>
-   <div>
-       <div>
-          <button id="idStart" onclick="start()"> Start </button>
-          <button id="idReset" onclick="reset()"> Reset </button>
-       </div>
-       <div>
-           <table class="table" id="idTable">
-               <thead class="table-light">
-                   <tr>
-                   <th>Process</th>
-                       <th>Arrival Time</th>
-                       <th>Burst Time</th>
-                       <th>Remaining Burst Time</th>
-                       <th>Priority</th>
-                   </tr>
-               </thead>
-               <tbody>
-               </tbody>
-           </table>
-       </div>
-   </div>
-<div id="output" style="display: none">
-       <p>Di seguito l'evoluzione dei processi: </p>
-       <div class="progress" >
-           <div class="progress-bar progress-bar-success" role="progressbar" style="width:40%"> nome1 </div>
-           <div class="progress-bar progress-bar-warning" role="progressbar" style="width:35%"> nome2 </div>
-           <div class="progress-bar progress-bar-danger" role="progressbar" style="width:25%"> nome3 </div>
-       </div>
-   </div>
-</div>
-<script src="script.js"></script>
+    <h2>CPU Scheduler Simulator</h2>
+    <h3>Round Robin Algorithm</h3>
+    <p>The Round Robin algorithm is a preemptive scheduling algorithm, where each process is assigned to the same time to execute part of the job (time slice). If a process does not complete within its time slice, it is moved to the end of the ready queue. It's a starvation free algorithm which means all processes get a fair share of CPU time, without letting any process starve (without being executed)</p>
+
+    <div class="form-group">
+        <label for="timeSlice">Time Slice:</label>
+        <input type="number" class="form-control" id="timeSlice" placeholder="Enter time slice " min="1">
+    </div>
+
+    <h4>Add a Process</h4>
+    <form id="processForm" class="form-inline">
+        <div class="form-group">
+            <label for="processName">Process Name:</label>
+            <input type="text" class="form-control" id="processName" placeholder="Example: P1">
+        </div>
+        <div class="form-group">
+            <label for="arrivalTime">Arrival Time:</label>
+            <input type="number" class="form-control" id="arrivalTime" placeholder="Example: 0" min="0">
+        </div>
+        <div class="form-group">
+            <label for="burstTime">Burst Time:</label>
+            <input type="number" class="form-control" id="burstTime" placeholder="Example: 5" min="1" >
+        </div>
+        <div class="form-group">
+            <label for="priority">Priority:</label>
+            <input type="number" class="form-control" id="priority" placeholder="Example: 1" min="1">
+        </div>
+    <div class="mt-3" style="text-align: center; margin-top: 15px;">
+        <button type="button" class="btn btn-primary" onclick="addProcess()">Add Process</button>
+        <button id="idStart" class="btn btn-success" onclick="start()">Start</button>
+        <button id="idReset" class="btn btn-warning" onclick="reset()">Reset</button>
+    </div>
+    </form>
+
+    <h4>Processes</h4>
+    <table class="table table-bordered" id="idTable">
+        <thead class="table-light">
+            <tr>
+                <th>Process</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Remaining Burst Time</th>
+                <th>Priority</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </body>
 </html>
-
-  
