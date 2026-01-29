@@ -39,8 +39,8 @@
         </div>
     <div class="mt-3" style="text-align: center; margin-top: 15px;">
         <button type="button" class="btn btn-primary" onclick="addProcess()">Add Process</button>
-        <button id="idStart" class="btn btn-success" onclick="start()">Start</button>
-        <button id="idReset" class="btn btn-warning" onclick="reset()">Reset</button>
+        <button type="button" id="idStart" class="btn btn-success" onclick="start()">Start</button>
+        <button type="button" id="idReset" class="btn btn-warning" onclick="reset()">Reset</button>
     </div>
     </form>
 
@@ -59,6 +59,28 @@
     </table>
 
     <div id="progressBar" class="progress" style="height: 30px; margin-top: 10px;"></div>
+
+    <div id="resultsContainer" style="margin-top: 30px; display: none;">
+        <h4>Scheduling Results</h4>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Average Turnaround Time:</strong>
+                        <p id="avgTurnaroundTime" style="font-size: 18px; color: #007bff;">-</p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Average Response Time:</strong>
+                        <p id="avgResponseTime" style="font-size: 18px; color: #28a745;">-</p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>CPU Efficiency:</strong>
+                        <p id="cpuEfficiency" style="font-size: 18px; color: #dc3545;">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="script.js"></script>

@@ -1,20 +1,5 @@
-class Process {
-    constructor(name, arrivalTime, burstTime, priority) {
-        this.name = name;
-        this.arrivalTime = arrivalTime;
-        this.burstTime = burstTime;
-        this.remainingTime = burstTime;
-        this.priority = priority;
-        this.color = this.getRandomColor();
-    }
-    // GPT
-    getRandomColor() {
-        const colors = ['#FFDDC1', '#C1FFD7', '#C1D4FF', '#FFC1F1', '#FFF2C1', '#C1FFF2', '#E1C1FF', '#FFC1C1'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
-}
-
 let processes = [];
+const colors = ['#FFDDC1', '#C1FFD7', '#C1D4FF', '#FFC1F1', '#FFF2C1', '#C1FFF2', '#E1C1FF', '#FFC1C1'];
 
 function addProcess() {
     const name = document.getElementById('processName').value;
@@ -27,57 +12,82 @@ function addProcess() {
         return;
     }
 
-    const process = new Process(name, arrivalTime, burstTime, priority);
-    processes.push(process);
+    let color;
+    do {
+        color = colors[Math.floor(Math.random() * colors.length)];
+    } while (processes.length > 0 && color === processes[processes.length - 1].color);
+    
+    processes.push({ name, arrivalTime, burstTime, priority, color });
     updateTable();
-    updateProgressBar();
 }
 
-// gpt
 function updateTable() {
     const tbody = document.querySelector('#idTable tbody');
-    let html = '';
-    processes.forEach(process => {
-        html += `
-            <tr style="background-color: ${process.color};">
-                <td>${process.name}</td>
-                <td>${process.arrivalTime}</td>
-                <td>${process.burstTime}</td>
-                <td>${process.remainingTime}</td>
-                <td>${process.priority}</td>
-            </tr>
-        `;
-    });
-    tbody.innerHTML = html;
-}
-
-
-function updateProgressBar() {
-    const container = document.getElementById('progressBar');
-    container.innerHTML = ''; 
-    let totalBurst = 0;
-    processes.forEach(p => totalBurst += p.burstTime);
-
-    processes.forEach(p => {
-        let percent = (p.burstTime / totalBurst) * 100;
-        const div = document.createElement('div');
-        div.classList.add('progress-bar');
-        div.style.width = percent + '%';
-        div.style.backgroundColor = p.color; 
-        div.textContent = p.name;
-        container.appendChild(div);
-    });
+    tbody.innerHTML = processes.map(p => `
+        <tr style="background-color: ${p.color};">
+            <td>${p.name}</td>
+            <td>${p.arrivalTime}</td>
+            <td>${p.burstTime}</td>
+            <td>${p.burstTime}</td>
+            <td>${p.priority}</td>
+        </tr>
+    `).join('');
 }
 
 function start() {
-    updateTable();
+    if (!processes.length || !document.getElementById('timeSlice').value) return;
+    
+    const result = simulateRoundRobin(processes, parseInt(document.getElementById('timeSlice').value));
     updateProgressBar();
-    console.log('Simulation of round robin started');
+    
+    const avgT = result.reduce((a, p) => a + (p.completion - p.arrival), 0) / result.length;
+    const avgR = result.reduce((a, p) => a + (p.firstRun - p.arrival), 0) / result.length;
+    const eff = (result.reduce((a, p) => a + p.burst, 0) / result[result.length - 1].completion) * 100;
+
+    document.getElementById('avgTurnaroundTime').textContent = avgT.toFixed(2);
+    document.getElementById('avgResponseTime').textContent = avgR.toFixed(2);
+    document.getElementById('cpuEfficiency').textContent = eff.toFixed(2) + '%';
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function simulateRoundRobin(pa, ts) {
+    let p = pa.map(x => ({...x, arrival: x.arrivalTime, burst: x.burstTime, remaining: x.burstTime, firstRun: null, completion: null})).sort((a, b) => a.arrival - b.arrival);
+    let t = 0, q = [], d = [], i = 0;
+    while (d.length < p.length) {
+        while (i < p.length && p[i].arrival <= t) q.push(p[i++]);
+        if (!q.length) { if (i < p.length) t = p[i].arrival; else break; continue; }
+        const x = q.shift();
+        if (!x.firstRun) x.firstRun = t;
+        const e = Math.min(x.remaining, ts);
+        x.remaining -= e;
+        t += e;
+        if (x.remaining) q.push(x);
+        else { x.completion = t; d.push(x); }
+    }
+    return d;
+}
+
+function updateProgressBar() {
+    const container = document.getElementById('progressBar');
+    const totalBurst = processes.reduce((a, p) => a + p.burstTime, 0);
+    
+    container.innerHTML = processes.map(p => {
+        const percent = (p.burstTime / totalBurst) * 100;
+        return `<div class="progress-bar" style="width: ${percent}%; background-color: ${p.color};">${p.name}</div>`;
+    }).join('');
 }
 
 function reset() {
     processes = [];
-    updateTable();
-    updateProgressBar();
-    console.log('Simulation resetted');
+    document.querySelector('#idTable tbody').innerHTML = '';
+    document.getElementById('progressBar').innerHTML = '';
+    document.getElementById('processName').value = '';
+    document.getElementById('arrivalTime').value = '';
+    document.getElementById('burstTime').value = '';
+    document.getElementById('priority').value = '';
+    document.getElementById('timeSlice').value = '';
+    document.getElementById('resultsContainer').style.display = 'none';
+    document.getElementById('avgTurnaroundTime').textContent = '-';
+    document.getElementById('avgResponseTime').textContent = '-';
+    document.getElementById('cpuEfficiency').textContent = '-';
 }
