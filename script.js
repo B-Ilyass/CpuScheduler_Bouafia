@@ -35,20 +35,37 @@ function updateTable() {
     `).join('');
 }
 
+// gpt
 function start() {
     if (!processes.length || !document.getElementById('timeSlice').value) return;
     
-    const result = addProcess(processes, parseInt(document.getElementById('timeSlice').value));
-    updateProgressBar();
+    const ts = parseInt(document.getElementById('timeSlice').value);
+    const q = processes.map(p => ({ ...p, r: p.burstTime, f: -1, c: 0 }));
+    const rdy = [];
+    let t = 0, i = 0;
     
-    const avgT = result.reduce((a, p) => a + (p.completion - p.arrival), 0) / result.length;
-    const avgR = result.reduce((a, p) => a + (p.firstRun - p.arrival), 0) / result.length;
-    const eff = (result.reduce((a, p) => a + p.burst, 0) / result[result.length - 1].completion) * 100;
+    while (i < q.length || rdy.length) {
+        while (i < q.length && q[i].arrivalTime <= t) rdy.push(q[i++]);
+        if (!rdy.length) { t = q[i].arrivalTime; continue; }
+        const p = rdy.shift();
+        if (p.f === -1) p.f = t;
+        const e = Math.min(ts, p.r);
+        t += e;
+        p.r -= e;
+        if (p.r > 0) rdy.push(p);
+        else p.c = t;
+    }
+    
+    const n = q.length;
+    const aT = q.reduce((a, p) => a + (p.c - p.arrivalTime), 0) / n;
+    const aR = q.reduce((a, p) => a + (p.f - p.arrivalTime), 0) / n;
+    const eff = (q.reduce((a, p) => a + p.burstTime, 0) / t) * 100;
 
-    document.getElementById('avgTurnaroundTime').textContent = avgT.toFixed(2);
-    document.getElementById('avgResponseTime').textContent = avgR.toFixed(2);
+    document.getElementById('avgTurnaroundTime').textContent = aT.toFixed(2);
+    document.getElementById('avgResponseTime').textContent = aR.toFixed(2);
     document.getElementById('cpuEfficiency').textContent = eff.toFixed(2) + '%';
     document.getElementById('resultsContainer').style.display = 'block';
+    updateProgressBar();
 }
 
 
