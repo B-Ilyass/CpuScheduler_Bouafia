@@ -21,6 +21,7 @@ function addProcess() {
     updateTable();
 }
 
+// gpt
 function updateTable() {
     const tbody = document.querySelector('#idTable tbody');
     tbody.innerHTML = processes.map(p => `
@@ -37,7 +38,7 @@ function updateTable() {
 function start() {
     if (!processes.length || !document.getElementById('timeSlice').value) return;
     
-    const result = simulateRoundRobin(processes, parseInt(document.getElementById('timeSlice').value));
+    const result = addProcess(processes, parseInt(document.getElementById('timeSlice').value));
     updateProgressBar();
     
     const avgT = result.reduce((a, p) => a + (p.completion - p.arrival), 0) / result.length;
@@ -50,23 +51,8 @@ function start() {
     document.getElementById('resultsContainer').style.display = 'block';
 }
 
-function simulateRoundRobin(pa, ts) {
-    let p = pa.map(x => ({...x, arrival: x.arrivalTime, burst: x.burstTime, remaining: x.burstTime, firstRun: null, completion: null})).sort((a, b) => a.arrival - b.arrival);
-    let t = 0, q = [], d = [], i = 0;
-    while (d.length < p.length) {
-        while (i < p.length && p[i].arrival <= t) q.push(p[i++]);
-        if (!q.length) { if (i < p.length) t = p[i].arrival; else break; continue; }
-        const x = q.shift();
-        if (!x.firstRun) x.firstRun = t;
-        const e = Math.min(x.remaining, ts);
-        x.remaining -= e;
-        t += e;
-        if (x.remaining) q.push(x);
-        else { x.completion = t; d.push(x); }
-    }
-    return d;
-}
 
+//gpt
 function updateProgressBar() {
     const container = document.getElementById('progressBar');
     const totalBurst = processes.reduce((a, p) => a + p.burstTime, 0);
